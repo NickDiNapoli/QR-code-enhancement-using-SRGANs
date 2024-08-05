@@ -128,7 +128,7 @@ def create_model():
 
 def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
     
-    batch_size = 32
+    batch_size = 16
     train_lr_batches = []
     train_hr_batches = []
     for it in range(int(y_train.shape[0] / batch_size)):
