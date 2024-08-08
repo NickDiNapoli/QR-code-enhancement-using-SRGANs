@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import cv2
 
+from keras.backend import clear_session
 from keras.models import Sequential
 from keras import layers, Model
 from sklearn.model_selection import train_test_split
@@ -126,18 +127,22 @@ def create_model():
     return generator, discriminator, gan_model, vgg
 
 
+def data_generator(X, y, batch_size):
+    while True:
+        for start in range(0, len(X), batch_size):
+            end = min(start + batch_size, len(X))
+            yield X[start:end], y[start:end]
+
+
 def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
     
-    batch_size = 8
-    train_lr_batches = []
-    train_hr_batches = []
-    for it in range(int(y_train.shape[0] / batch_size)):
-        start_idx = it * batch_size
-        end_idx = start_idx + batch_size
-        train_hr_batches.append(y_train[start_idx:end_idx])
-        train_lr_batches.append(X_train[start_idx:end_idx])
+    batch_size = 32
+    epochs = 5
+    steps_per_epoch = len(X_train) // batch_size
 
-    epochs = 10
+    # Initialize the data generator
+    train_gen = data_generator(X_train, y_train, batch_size)
+
     #Enumerate training over epochs
     for e in range(epochs):
         print(f"----------EPOCH {e}----------")
@@ -149,13 +154,9 @@ def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
         d_losses = []
         
         #Enumerate training over batches. 
-        for b in range(len(train_hr_batches)): #tqdm(range(len(train_hr_batches))):
-            #if b % 10 == 0:
-                #print(f"Completed {b} batches, saving model")
-                #generator.save("gen_e_"+ str(e+1) +".h5")
-                
-            lr_imgs = train_lr_batches[b] #Fetch a batch of LR images for training
-            hr_imgs = train_hr_batches[b] #Fetch a batch of HR images for training
+        for b in range(steps_per_epoch): #tqdm(range(len(train_hr_batches))):
+
+            lr_imgs, hr_imgs = next(train_gen)  # Get the next batch from the generator
             
             fake_imgs = generator.predict_on_batch(lr_imgs) #Fake images
             
@@ -189,6 +190,7 @@ def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
         g_loss = np.sum(g_losses, axis=0) / len(g_losses)
         d_loss = np.sum(d_losses, axis=0) / len(d_losses)
         
+        clear_session()
         #Report the progress during training. 
         print("epoch:", e+1 ,"g_loss:", g_loss, "d_loss:", d_loss)
 
