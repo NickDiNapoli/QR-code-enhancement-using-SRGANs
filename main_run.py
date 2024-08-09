@@ -134,6 +134,14 @@ def data_generator(X, y, batch_size):
             yield X[start:end], y[start:end]
 
 
+def data_generator_tf(X, y, batch_size):
+    dataset = tf.data.Dataset.from_tensor_slices((X, y))
+    dataset = dataset.shuffle(buffer_size=10000)
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.prefetch(tf.data.AUTOTUNE)
+    return dataset
+
+
 def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
     
     batch_size = 32
@@ -141,7 +149,8 @@ def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
     steps_per_epoch = len(X_train) // batch_size
 
     # Initialize the data generator
-    train_gen = data_generator(X_train, y_train, batch_size)
+    #train_gen = data_generator(X_train, y_train, batch_size)
+    train_dataset = data_generator(X_train, y_train, batch_size)
 
     #Enumerate training over epochs
     for e in range(epochs):
@@ -154,9 +163,10 @@ def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
         d_losses = []
         
         #Enumerate training over batches. 
-        for b in range(steps_per_epoch): #tqdm(range(len(train_hr_batches))):
+        #for b in range(steps_per_epoch): #tqdm(range(len(train_hr_batches))):
+        for lr_imgs, hr_imgs in train_dataset:
 
-            lr_imgs, hr_imgs = next(train_gen)  # Get the next batch from the generator
+            #lr_imgs, hr_imgs = next(train_gen)  # Get the next batch from the generator
             
             fake_imgs = generator.predict_on_batch(lr_imgs) #Fake images
             
