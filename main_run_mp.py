@@ -264,7 +264,7 @@ def create_training_data_parallel(datadir):
 
 # Training the model
 def train_batch(batch_data):
-    batch_size = 32
+    batch_size = 8
     fake_label = np.zeros((batch_size, 1)) # Assign a label of 0 to all fake (generated images)
     real_label = np.ones((batch_size, 1)) # Assign a label of 1 to all real images.
 
@@ -282,7 +282,7 @@ def train_batch(batch_data):
     return g_loss, d_loss_gen, d_loss_real
 
 def train_model_parallel(X_train, y_train, generator, discriminator, gan_model, vgg):
-    batch_size = 32
+    batch_size = 8
     epochs = 5
     steps_per_epoch = len(X_train) // batch_size
     train_dataset = data_generator(X_train, y_train, batch_size)
