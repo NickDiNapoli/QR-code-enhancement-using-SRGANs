@@ -144,8 +144,8 @@ def data_generator_tf(X, y, batch_size):
 
 def train_model(X_train, y_train, generator, discriminator, gan_model, vgg):
     
-    batch_size = 32
-    epochs = 5
+    batch_size = 8
+    epochs = 10
     steps_per_epoch = len(X_train) // batch_size
 
     # Initialize the data generator
@@ -290,7 +290,8 @@ if __name__=='__main__':
     X=np.concatenate((X,X1), axis = 0)
     Xs=np.concatenate((Xs,Xs1), axis=0)
 
-    X_train, X_valid, y_train, y_valid = train_test_split(Xs, X, test_size = 0.33, random_state = 12)
+    X_train, X_valid, y_train, y_valid = train_test_split(Xs, X, test_size = 0.33, random_state = 42)
+    X_train, X_valid, y_train, y_valid = X_train[::2, ...], X_valid[::2, ...], y_train[::2, ...], y_valid[::2, ...]
 
     generator, discriminator, gan_model, vgg = create_model()
 
